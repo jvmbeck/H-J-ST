@@ -1,40 +1,42 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+  <q-layout view="hHh Lpr fFf">
+    <q-header reveal elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
+        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
 
         <q-toolbar-title>
-          Quasar App
+          <q-avatar>
+            <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg" />
+          </q-avatar>
+          Title
         </q-toolbar-title>
-
-        <div>Quasar v{{ $q.version }}</div>
       </q-toolbar>
     </q-header>
 
     <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
+      v-if="$route.meta.showDrawer"
+      v-model="drawerOpen"
+      side="left"
       bordered
+      content-class="drawer-content"
     >
-      <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
+      <q-list v-if="drawerEmployeeData">
+        <q-item-label>Employee Information</q-item-label>
+        <q-item>
+          <q-item-section
+            >Nome: {{ drawerEmployeeData.firstName }}</q-item-section
+          >
+        </q-item>
+        <q-item>
+          <q-item-section>Setor: {{ drawerEmployeeData.area }}</q-item-section>
+        </q-item>
+        <!-- Add additional fields if necessary -->
 
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
+        <q-btn
+          label="Ir para Alocação"
+          color="primary"
+          @click="irParaAlocacao"
+          class="q-mt-md"
         />
       </q-list>
     </q-drawer>
@@ -46,71 +48,42 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
+import { eventBus } from "src/mitt/eventBus";
 
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
-]
-
-export default defineComponent({
-  name: 'MainLayout',
-
-  components: {
-    EssentialLink
-  },
-
-  setup () {
-    const leftDrawerOpen = ref(false)
-
+export default {
+  data() {
     return {
-      essentialLinks: linksList,
-      leftDrawerOpen,
-      toggleLeftDrawer () {
-        leftDrawerOpen.value = !leftDrawerOpen.value
+      drawerOpen: false,
+      drawerEmployeeData: null, // Holds employee data for the drawer
+    };
+  },
+
+  methods: {
+    // Method to navigate to the "alocarEpi" page with the employee ID
+    irParaAlocacao() {
+      if (this.drawerEmployeeData && this.drawerEmployeeData.id) {
+        this.$router.push({
+          name: "alocarEpi",
+          params: { employeeId: this.drawerEmployeeData.id },
+        });
+      } else {
+        console.error("Erro: Employee ID não encontrado.");
       }
-    }
-  }
-})
+    },
+    toggleLeftDrawer() {
+      this.drawerOpen = !this.drawerOpen;
+    },
+  },
+  created() {
+    // Listen for emitted employee data
+    eventBus.on("update-drawer-data", (employeeData) => {
+      this.drawerEmployeeData = employeeData;
+      this.drawerOpen = true; // Automatically open drawer when data is received
+    });
+  },
+  beforeUnmount() {
+    // Remove event listener to prevent memory leaks
+    eventBus.off("update-drawer-data");
+  },
+};
 </script>
