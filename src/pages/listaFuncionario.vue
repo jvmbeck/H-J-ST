@@ -33,11 +33,6 @@
         <p>Nenhum funcionário encontrado</p>
       </div>
 
-      <div>
-        <div>Nome: {{ selectedObject.firstName }}</div>
-        <div>Setor: {{ selectedObject.area }}</div>
-      </div>
-
       <!-- Loader while fetching data -->
       <q-spinner v-if="loading" color="primary" size="50px" />
 
@@ -119,7 +114,6 @@ export default {
       loading: false, // Variable to show the loader while fetching data
       selectedObject: 0, // Holds the currently selected object
       selectedIndex: 0, // Holds the index of the selected object
-      isDialogOpen: false, // Controls the dialog visibility for updating
       isAddDialogOpen: false, // Controls the dialog visibility for adding new object
       updatedData: {
         firstName: "",
@@ -178,7 +172,6 @@ export default {
           );
 
           console.log("Objeto atualizado com sucesso.");
-          this.isDialogOpen = false; // Fecha o diálogo de atualização
         } catch (error) {
           console.error("Erro ao atualizar objeto: ", error);
         }
@@ -196,7 +189,6 @@ export default {
           this.objectList = this.objectList.filter(
             (obj) => obj.id !== this.selectedObject.id
           ); // Remove o objeto da lista local
-          this.isDialogOpen = false; // Fecha o diálogo
           console.log("Objeto excluído com sucesso.");
         } catch (error) {
           console.error("Erro ao excluir objeto: ", error);
