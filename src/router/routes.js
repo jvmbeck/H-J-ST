@@ -31,6 +31,13 @@ const routes = [
         props: true,
         meta: { showDrawer: true },
       },
+      {
+        name: "editarRetiradaEpi",
+        path: "editarRetiradaEpi/:retiradaId",
+        component: () => import("src/pages/editarRetiradaEpi.vue"),
+        props: true,
+        meta: { showDrawer: false },
+      },
     ],
   },
   // Always leave this as last one, but you can also remove it

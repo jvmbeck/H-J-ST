@@ -106,7 +106,7 @@ import { database } from "src/key/configKey"; // Your Firebase configuration
 import { eventBus } from "src/mitt/eventBus";
 
 export default {
-  name: "MyComponent",
+  name: "listaFuncionario",
 
   data() {
     return {
