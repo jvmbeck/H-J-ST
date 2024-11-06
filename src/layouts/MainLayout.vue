@@ -44,6 +44,8 @@
               Nome: {{ item.name }}
               <br />
               Quantidade: {{ item.quantSubtracted }}
+              <br />
+              Data: {{ item.timestamp }}
               <!-- Replace with the actual attribute name you want to display -->
             </q-item-section>
 
@@ -134,8 +136,10 @@ export default {
       this.selectedItemIndex = this.selectedItemIndex === index ? null : index;
     },
     editItem(item) {
-      console.log("Editing item:", item);
-      // Add your edit logic here
+      this.$router.push({
+        path: `/editarRetiradaEpi/${this.drawerEmployeeData.id}/${item.id}`,
+        query: { ...item },
+      });
     },
     async deleteItem(item) {
       if (!item.id) {
