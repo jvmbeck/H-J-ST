@@ -33,7 +33,7 @@ const routes = [
       },
       {
         name: "editarRetiradaEpi",
-        path: "editarRetiradaEpi/:retiradaId",
+        path: "editarRetiradaEpi/:employeeId/:retiradaId",
         component: () => import("src/pages/editarRetiradaEpi.vue"),
         props: true,
         meta: { showDrawer: false },
