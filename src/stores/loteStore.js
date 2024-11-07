@@ -5,11 +5,11 @@ import { database } from "src/key/configKey";
 
 export const useLoteStore = defineStore("lote", {
   state: () => ({
-    availableItems: [],
+    loteData: [],
   }),
   actions: {
-    async fetchAvailableItems() {
-      if (this.availableItems.length) return; // Avoid refetching if already loaded
+    async fetchLoteData() {
+      if (this.loteData.length) return; // Avoid refetching if already loaded
 
       const loteRef = ref(database, "lote");
 
@@ -17,8 +17,9 @@ export const useLoteStore = defineStore("lote", {
         const snapshot = await get(loteRef);
         if (snapshot.exists()) {
           const loteData = snapshot.val();
-          this.availableItems = Object.keys(loteData).map((id) => ({
+          this.loteData = Object.keys(loteData).map((id) => ({
             name: loteData[id].name,
+            quant: loteData[id].quant,
             id,
           }));
         } else {

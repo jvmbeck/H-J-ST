@@ -137,8 +137,12 @@ export default {
     },
     editItem(item) {
       this.$router.push({
-        path: `/editarRetiradaEpi/${this.drawerEmployeeData.id}/${item.id}`,
-        query: { ...item },
+        name: "editarRetiradaEpi",
+        query: {
+          name: selectedItem.name,
+          quantity: selectedItem.quantity,
+          loteId: selectedItem.loteId, // Ensure this is passed correctly
+        },
       });
     },
     async deleteItem(item) {
