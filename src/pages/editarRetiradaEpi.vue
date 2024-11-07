@@ -6,19 +6,26 @@
       </q-card-section>
 
       <q-card-section>
+        <!-- Dropdown to select an item -->
         <q-select
           v-model="editData.name"
-          :options="availableItems"
+          :options="loteData"
           label="Name"
           option-label="name"
           option-value="name"
           use-input
           emit-value
           map-options
+          @update:model-value="updateLoteId"
         />
 
-        <q-input v-model="editData.quantity" label="Quantity" type="number" />
-        <!-- Add additional fields as needed -->
+        <!-- Input field for quantity -->
+        <q-input
+          v-model="editData.quantity"
+          label="Quantity"
+          type="number"
+          min="0"
+        />
       </q-card-section>
 
       <q-card-actions align="right">
@@ -30,7 +37,7 @@
 </template>
 
 <script>
-import { ref, get, update } from "firebase/database";
+import { ref, set } from "firebase/database";
 import { database } from "src/key/configKey";
 import { useLoteStore } from "src/stores/loteStore";
 
@@ -41,34 +48,64 @@ export default {
       editData: {
         name: this.$route.query.name || "",
         quantity: this.$route.query.quantity || 0,
+        loteId: this.$route.query.loteId || "",
       },
+      initialQuant: null,
     };
   },
   async created() {
     const loteStore = useLoteStore();
-    await loteStore.fetchAvailableItems();
+    await loteStore.fetchLoteData();
+    console.log("Lote data loaded:", loteStore.loteData); // Debug: Check loteData structure
   },
   methods: {
-    async saveChanges() {
-      const itemPath = `funcionario/${this.employeeId}/retiradas/${this.retiradaId}`;
-      const itemRef = ref(database, itemPath);
-
-      try {
-        await update(itemRef, this.editData);
-        console.log("Item updated successfully.");
-        this.goBack(); // Redirect back after saving
-      } catch (error) {
-        console.error("Error updating item:", error);
+    // This function is now triggered by the updated model value
+    updateLoteId(newValue) {
+      const selectedItem = this.loteData.find((item) => item.name === newValue);
+      if (selectedItem) {
+        this.editData.loteId = selectedItem.id;
+        console.log("Lote ID set:", this.editData.loteId); // Debug: Check if loteId is set
+      } else {
+        console.warn("No matching item found for name:", newValue); // Debug: Log if no match
       }
     },
-    goBack() {
-      this.$router.push("/listaFuncionario"); // Redirect to the employee list page
+
+    async saveChanges() {
+      try {
+        const loteId = this.editData.loteId;
+        const newQuantity = parseFloat(this.editData.quantity);
+
+        console.log("loteId:", loteId); // Debug: Check loteId
+        console.log("newQuantity:", newQuantity); // Debug: Check newQuantity
+
+        if (!loteId || isNaN(newQuantity)) {
+          throw new Error("Invalid loteId or quantity");
+        }
+
+        const loteStore = useLoteStore();
+        const loteItem = loteStore.loteData.find((item) => item.id === loteId);
+        if (!loteItem || typeof loteItem.quant !== "number") {
+          throw new Error(
+            "Lote item not found or 'quant' attribute is invalid"
+          );
+        }
+
+        const difference = newQuantity - this.initialQuant;
+        loteItem.quant += difference;
+
+        const itemRef = ref(database, `lote/${loteId}/quant`);
+        await set(itemRef, loteItem.quant);
+
+        console.log("Changes saved successfully!");
+      } catch (error) {
+        console.error("Error saving changes:", error);
+      }
     },
   },
   computed: {
-    availableItems() {
+    loteData() {
       const loteStore = useLoteStore();
-      return loteStore.availableItems;
+      return loteStore.loteData;
     },
   },
 };
